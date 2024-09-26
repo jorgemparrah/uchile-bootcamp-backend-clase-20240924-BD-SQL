@@ -1,0 +1,106 @@
+CREATE DATABASE tienda;
+
+USE tienda;
+
+-- CREANDO TABLA PRODUCTOS
+CREATE TABLE productos (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    nombre VARCHAR(255),
+    precio DECIMAL(10, 2)
+);
+
+-- CREANDO TABLA PEDIDOS
+CREATE TABLE pedidos (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    producto_id INT,
+    cantidad INT,
+    FOREIGN KEY (producto_id) REFERENCES productos(id)
+);
+
+-- AGREGANDO COLUMNA EMAIL A LA TABLA PEDIDOS
+ALTER TABLE pedidos ADD COLUMN email VARCHAR(255);
+
+-- ELIMINANDO COLUMNA EMAIL DE LA TABLA PEDIDOS
+ALTER TABLE pedidos DROP COLUMN email;
+
+-- CREANDO TABLA PEDIDOS2
+CREATE TABLE pedidos2 (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    producto_id INT,
+    cantidad INT,
+    FOREIGN KEY (producto_id) REFERENCES productos(id)
+);
+
+-- AGREGANDO CONSTRAINT A LA TABLA PEDIDOS2
+ALTER TABLE pedidos2
+ADD CONSTRAINT fk_producto
+FOREIGN KEY (producto_id)
+REFERENCES productos(id);
+
+-- ELIMINANDO CONSTRAINT DE LA TABLA PEDIDOS2
+ALTER TABLE pedidos2
+DROP FOREIGN KEY fk_producto;
+
+-- ELIMINANDO TABLA PEDIDOS2
+DROP TABLE pedidos2;
+
+-- INSERTANDO DATOS EN LA TABLA PRODUCTOS
+-- SI NO COLOCO LOS CAMPOS LOS VALORES DEBEN IR EN EL ORDEN COMO ESTAN EN LA TABLA
+INSERT INTO productos
+VALUES ('Camiseta', 19.99);
+
+INSERT INTO productos (precio, nombre)
+VALUES (50.99, 'Bufanda');
+
+-- ACTUALIZANDO DATOS DE LA TABLA PRODUCTOS
+UPDATE productos SET precio = 10 WHERE nombre = 'Camiseta';
+UPDATE productos SET precio = 3000 WHERE nombre = 'Auto';
+UPDATE productos SET precio = 4000 WHERE id = 2;
+
+-- ELIMINADO DATOS DE LA TABLA PRODUCTOS
+DELETE FROM productos WHERE nombre = 'Computador';
+
+-- CONSULTANDO DATOS DE LA TABLA PRODUCTOS
+SELECT * FROM productos; -- TODAS LAS COLUMNAS
+SELECT nombre, precio FROM productos; -- COLUMNAS ESPECIFICAS
+SELECT nombre, id  FROM productos; -- COLUMNAS ESPECIFICAS EN OTRO ORDEN
+
+-- CONSULTANDO DATOS DE LA TABLA PRODUCTOS CON FILTROS
+SELECT * FROM productos
+WHERE precio > 30;
+
+SELECT * FROM productos
+WHERE precio > 10 AND precio < 3500;
+
+SELECT * FROM productos
+WHERE precio < 50 OR precio > 2000;
+
+-- CONSULTANDO DATOS DE LA TABLA PRODUCTOS CUYO NOMBRE COMIENCE CON 'Ca'
+SELECT * FROM productos
+WHERE nombre LIKE 'Ca%';
+
+-- CONSULTANDO DATOS DE LA TABLA PRODUCTOS CUYO NOMBRE CONTIENE 'a'
+SELECT * FROM productos
+WHERE nombre LIKE '%a%';
+
+-- CONSULTANDO DATOS DE LA TABLA PRODUCTOS CUYO NOMBRE FINALICE 'a'
+SELECT * FROM productos
+WHERE nombre LIKE '%a';
+
+SELECT * FROM productos
+WHERE nombre LIKE '%a' OR nombre = 'Auto' OR precio > 1000 OR nombre LIKE 'B%';
+
+-- ALIAS EN COLUMNAS
+SELECT nombre, precio as valor FROM productos;
+
+-- ALIAS EN TABLAS
+SELECT p.nombre, p.precio FROM productos p WHERE p.precio > 100;
+
+-- UTILIZADO FUNCIONES
+SELECT MIN(precio) as minimo, AVG(precio) as promedio, MAX(precio) as maximo,
+COUNT(precio) as contador, SUM(precio) as total
+FROM productos
+WHERE UPPER(nombre) = 'AUTO';
+
+-- UTILIZADO FUNCIONES
+SELECT SUBSTRING(UPPER(nombre), 2, 4) as nombre FROM productos;

@@ -1,0 +1,7 @@
+services:
+  bd-server:
+    image: mysql:8.0.39-debian
+    environment:
+      - MYSQL_ROOT_PASSWORD=clave123
+    ports:
+      - "3306:3306"
