@@ -16,11 +16,12 @@ profesional dentro de la institución.
 
 -- Crear la base de datos
 CREATE DATABASE Universidad;
-USE Universidad;
+-- CREATE SCHEMA universidad; PARA POSTGRES
+USE Universidad; -- NO FUNCIONA EN POSTGRES
 
 -- Crear la tabla de Departamentos
 CREATE TABLE Departamentos (
-    departamento_id INT AUTO_INCREMENT PRIMARY KEY,
+    departamento_id INT AUTO_INCREMENT PRIMARY KEY, -- INT AUTO_INCREMENT NO FUNCIONA EN POSTGRES CAMBIAR POR SERIAL
     nombre VARCHAR(100) NOT NULL,
     edificio VARCHAR(100)
 );
@@ -194,14 +195,95 @@ INSERT INTO Inscripciones (estudiante_id, curso_id, fecha_inscripcion, nota) VAL
 
 -- Fin del script
 
+-- EJEMPLO GROUP BY
+
+-- CUANTOS PROFESORES DICTAN CADA CURSO
+SELECT curso_id, COUNT(profesor_id) as nro_profesores
+FROM Curso_Profesores cp
+GROUP BY curso_id;
+
+-- CUANTOS CURSOS DICTA CADA PROFESOR
+SELECT profesor_id, COUNT(curso_id)
+FROM Curso_Profesores cp
+GROUP BY profesor_id;
+
+
+-- JOIN
+
+-- INNER JOIN
+SELECT * FROM Departamentos d
+INNER JOIN Profesores p
+ON d.departamento_id = p.departamento_id
+ORDER BY d.departamento_id;
+
+-- LEFT JOIN
+SELECT * FROM Departamentos d
+LEFT JOIN Profesores p
+ON d.departamento_id = p.departamento_id
+ORDER BY d.departamento_id;
+
+-- RIGHT JOIN
+SELECT * FROM Departamentos d
+RIGHT JOIN Profesores p
+ON d.departamento_id = p.departamento_id
+ORDER BY d.departamento_id;
+
+-- IS NULL o IS NOT NULL
+SELECT * FROM Profesores p
+WHERE p.departamento_id IS NOT NULL;
+
+SELECT * FROM Profesores p
+WHERE p.departamento_id IS NULL;
+
+-- Cuanto paga cada departamento a los profesores por los cursos
+SELECT d.departamento_id, d.nombre, SUM(p.salario) FROM Departamentos d
+INNER JOIN Profesores p
+ON d.departamento_id = p.departamento_id
+INNER JOIN Curso_Profesores cp
+ON cp.profesor_id = p.profesor_id
+INNER JOIN Cursos c
+ON cp.curso_id = c.curso_id
+GROUP BY d.departamento_id, d.nombre
+ORDER BY d.departamento_id;
+
+-- SUBCONSULTAS
+SELECT MAX(salario) FROM Profesores p; -- VALOR
+SELECT profesor_id FROM Profesores p; -- LISTA
+SELECT * FROM Profesores p; -- TABLA
+
+-- SUBCONSULTA COMO VALOR
+SELECT * FROM Profesores p 
+WHERE p.salario = (SELECT MAX(salario) FROM Profesores p);
+
+-- SUBCONSULTA COMO LISTA
+SELECT * FROM Departamentos d 
+WHERE d.departamento_id IN (SELECT departamento_id FROM Profesores p WHERE salario < 50000);
+
+-- SUBCONSULTA COMO TABLA
+SELECT * FROM (SELECT * FROM Profesores p WHERE salario > (SELECT AVG(salario) FROM Profesores p)) ps
+INNER JOIN Departamentos d
+ON d.departamento_id = ps.departamento_id;
+
 -- Seleccionar todos los registros de la tabla Estudiantes.
+SELECT * FROM Estudiantes;
+
 -- Mostrar los nombre y apellido de todos los profesores.
+SELECT nombre, apellido FROM Profesores;
+
 -- Listar los cursos que tienen más de 4 créditos.
 -- Obtener los estudiantes que ingresaron en 2020 y viven en "Madrid".
+SELECT * FROM Estudiantes e
+INNER JOIN Detalles_Estudiantes de
+ON e.estudiante_id = de.estudiante_id
+WHERE ciudad = 'Madrid'
+AND DATE_FORMAT(e.fecha_ingreso, '%Y') = '2020';
+
 -- Mostrar los departamentos que están en el "Edificio A" o "Edificio B".
 -- Seleccionar profesores con un salario mayor o igual a 55000.
 -- Encontrar el curso con el nombre "Programación".
 -- Listar los cursos con créditos entre 4 y 6.
+SELECT * FROM Cursos WHERE créditos >= 4 AND créditos <= 6;
+
 -- Mostrar estudiantes que no tienen email registrado.
 -- Ordenar los estudiantes por apellido ascendente.
 -- Encontrar profesores cuyos nombres comienzan con 'L'.
@@ -209,10 +291,14 @@ INSERT INTO Inscripciones (estudiante_id, curso_id, fecha_inscripcion, nota) VAL
 -- Seleccionar estudiantes que viven en las ciudades "Madrid", "Barcelona" o "Valencia".
 -- Mostrar profesores ordenados por departamento_id y luego por salario descendente.
 -- Obtener los primeros 5 estudiantes más recientes según fecha_ingreso.
+SELECT * FROM Estudiantes e ORDER BY fecha_ingreso DESC LIMIT 10;
+
 -- Listar las ciudades únicas donde residen los estudiantes.
 -- Mostrar cursos que son del departamento de Informática o Matemáticas y tienen más de 5 créditos.
 -- Usar alias de columna y tabla para seleccionar e.nombre y e.apellido de la tabla Estudiantes con alias 'e'.
 -- Mostrar el nombre, apellido y el salario anual incrementado en un 10% de los profesores.
+SELECT p.*, (p.salario * 12) as salario_anual, (p.salario * 12 * 1.10) as salario_anual_incrementado FROM Profesores p;
+
 -- Obtener el año de ingreso de todos los estudiantes.
 -- Contar el número total de cursos ofrecidos.
 -- Obtener el salario promedio de los profesores.
@@ -225,6 +311,17 @@ INSERT INTO Inscripciones (estudiante_id, curso_id, fecha_inscripcion, nota) VAL
 -- Contar cuántas ciudades distintas hay en la tabla Detalles_Estudiantes.
 -- Obtener el número de inscripciones por curso y semestre.
 -- Seleccionar profesores que pertenecen al departamento con nombre "Física".
+-- CON SUBCONSULTA
+SELECT * FROM Profesores p
+WHERE p.departamento_id IN (SELECT departamento_id as id FROM Departamentos d
+WHERE d.nombre = 'Física');
+
+-- CON JOIN
+SELECT p.* FROM Profesores p 
+INNER JOIN Departamentos d 
+ON p.departamento_id = d.departamento_id
+WHERE d.nombre = 'Física';
+
 -- Mostrar el nombre de cada curso y el número de estudiantes inscritos en él.
 -- Listar estudiantes cuya nota es superior al promedio de notas en su curso.
 -- Obtener los nombres de los estudiantes y los cursos en los que están inscritos.
@@ -232,6 +329,10 @@ INSERT INTO Inscripciones (estudiante_id, curso_id, fecha_inscripcion, nota) VAL
 -- Listar todos los profesores y los cursos que imparten.
 -- Obtener el nombre del estudiante, el curso y el profesor que imparte el curso.
 -- Calcular el promedio de notas por curso y mostrar el nombre del curso.
+SELECT c.curso_id as id, c.nombre, prom.promedio
+FROM (SELECT curso_id, AVG(i.nota) as promedio FROM Inscripciones i  GROUP BY i.curso_id) prom
+INNER JOIN Cursos c ON prom.curso_id = c.curso_id;
+
 -- Actualizar el salario de los profesores del departamento de Física incrementándolo en un 5%.
 -- Incrementar en un 5% el salario de los profesores que imparten cursos en más de un departamento.
 -- Eliminar inscripciones de estudiantes que hayan reprobado más de dos cursos.
