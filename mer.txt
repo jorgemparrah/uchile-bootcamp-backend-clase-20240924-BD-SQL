@@ -1,0 +1,47 @@
+Table departamentos {
+  id INTEGER [primary key]
+  area VARCHAR(40)
+}
+
+Table cursos {
+  id INTEGER [primary key]
+  nombre VARCHAR(40)
+  id_departamento INTEGER
+}
+
+Table estudiantes {
+  rut VARCHAR(10) [primary key]
+  nombre_completo VARCHAR(100) 
+  fecha_nacimiento TIMESTAMP
+  direccion VARCHAR(100) 
+  telefonos VARCHAR(50)
+}
+
+Table calificaciones {
+  rut_estudiante VARCHAR(10) [primary key]
+  id_curso INTEGER [primary key]
+  semestre VARCHAR(6) [primary key]
+  calificacion INTEGER
+}
+
+Table profesores {
+  rut VARCHAR(10) [primary key]
+  nombres VARCHAR(30)
+  apellidos VARCHAR(30)
+  direccion VARCHAR(100) 
+  telefonos VARCHAR(50)
+  id_departamento INTEGER
+}
+
+Table profesor_curso {
+  rut_profesor VARCHAR(10) [primary key]
+  id_curso INTEGER [primary key]
+  semestre VARCHAR(6) [primary key, note: 'El semestre estaba en otra entidad']
+}
+
+Ref: departamentos.id < cursos.id_departamento
+Ref: estudiantes.rut < calificaciones.rut_estudiante
+Ref: cursos.id < calificaciones.id_curso
+Ref: profesores.rut < profesor_curso.rut_profesor
+Ref: cursos.id < profesor_curso.id_curso
+Ref: departamentos.id < profesores.id_departamento

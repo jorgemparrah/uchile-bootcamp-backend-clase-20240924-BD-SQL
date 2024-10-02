@@ -1,0 +1,7 @@
+erDiagram
+    departamentos ||..|{ cursos : ofrece
+    estudiantes ||..|{ calificaciones : tienen
+    cursos ||..|{ calificaciones : reciben
+    profesores ||..|{ profesor_curso : tiene
+    cursos ||..|{ profesor_curso : tiene
+    profesores }|..|| departamentos : pertenecen
